@@ -6,16 +6,10 @@
 #include "Arduino.h"
 #include "stdlib_noniso.h"
 
-#if defined(ESP8266)
-#define HARDWARE "ESP8266"
-#include "ESP8266WiFi.h"
-#include "ESPAsyncTCP.h"
-#include "ESPAsyncWebServer.h"
-#elif defined(ESP32)
+#if defined(ESP32)
 #define HARDWARE "ESP32"
 #include "AsyncTCP.h"
-#include "ESPAsyncWebServer.h"
-#include "WiFi.h"
+#include "AsyncWebServer_ESP32_W5500.h"
 #endif
 
 typedef std::function<void(AsyncWebSocketClient *)> ConnHandler;
