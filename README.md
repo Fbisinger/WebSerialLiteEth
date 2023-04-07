@@ -1,6 +1,6 @@
 # WebSerialLite
 
-WebSerial is a Serial Monitor for ESP8266 & ESP32 Microcontrollers that can be accessed remotely via a web browser. Webpage is stored in program memory of the microcontroller.
+WebSerialEth is a Serial Monitor for ESP32 Microcontrollers, combined with W5500 Ethernet controller, that can be accessed remotely via a web browser. Webpage is stored in program memory of the microcontroller.
 
 ## Preview
 
@@ -24,23 +24,15 @@ I'm sorry that the current version is already the Pro version. XD
 
 ## Dependencies
 
-For ESP8266:
-
-- ESP8266 Arduino Core - (latest)
-- ESPAsyncTCP - v1.2.2
-- ESPAsyncWebServer - v1.2.3
-
-For ESP32:
-
 - ESP32 Arduino Core - (latest)
 - AsyncTCP - v1.1.1
-- ESPAsyncWebServer - v1.2.3
+- AsyncWebServer_ESP32_W5500 - ([latest](https://github.com/khoih-prog/AsyncWebServer_ESP32_W5500)) 
 
 ## Documentation
 
-WebSerialLite is very similar to the default Serial Monitor Library of Arduino.
+WebSerialLiteEth is very similar to the default Serial Monitor Library of Arduino.
 
-Please see `Demo` examples for better understanding on how to setup WebSerialLite for your Project.
+Please see `Demo` examples for better understanding on how to setup WebSerialLiteEth for your Project.
 
 WebSerialLite has 2 main functions:
 
@@ -53,7 +45,7 @@ WebSerialLite has 2 main functions:
 
 Both functions support the following datatypes: `String`, `const char`, `char`, `int`, `uint8_t`, `uint16_t`, `uint32_t`, `double`, `float`.
 
-To Access WebSerialLite: Go to `<IP Address>/webserial` in your browser ( where `<IP Address>` is the IP of your ESP).
+To Access WebSerialLite: Go to `<IP Address>/webserial` in your browser ( where `<IP Address>` is the IP of your Ethernet Controller).
 
 ## FAQ
 
@@ -68,4 +60,6 @@ Every Contribution to this repository is highly appreciated! Don't fear to creat
 
 ## License
 
-WebSerialLite is licensed under General Public License v3 ( GPLv3 ).
+WebSerialLiteEth is licensed under General Public License v3 ( GPLv3 ).
+
+:de: © F.Bisinger 2023
