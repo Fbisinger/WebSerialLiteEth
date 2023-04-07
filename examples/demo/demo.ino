@@ -1,26 +1,37 @@
 /*
-  WebSerialLite Demo
+  WebSerialLiteEth Demo
   ------
-  This example code works for both ESP8266 & ESP32 Microcontrollers
-  WebSerial is accessible at your ESP's <IPAddress>/webserial URL.
+  This example code works for  ESP32 Microcontrollers with W5500 Ethernet Controller
+  WebSerial is accessible at your Ethernet Controller's <IPAddress>/webserial URL.
 
-  Author: HomeboyC
+  Author: Fbisinger
 */
 #include <Arduino.h>
-#if defined(ESP8266)
-  #include <ESP8266WiFi.h>
-  #include <ESPAsyncTCP.h>
-#elif defined(ESP32)
-  #include <WiFi.h>
-  #include <AsyncTCP.h>
-#endif
-#include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <AsyncWebServer_ESP32_W5500.h>
 #include <WebSerialLite.h>
+#include <SPI.h>
+
+#define _ASYNC_WEBSERVER_LOGLEVEL_       2
+
+byte mac[6] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x0D };
+
+//////////////////////////////////////////////////////////
+
+// Optional values to override default settings
+// Don't change unless you know what you're doing
+//#define ETH_SPI_HOST        SPI3_HOST
+//#define SPI_CLOCK_MHZ       25
+
+// Must connect INT to GPIOxx or not working
+#define INT_GPIO 35
+#define MISO_GPIO 19
+#define MOSI_GPIO 23
+#define SCK_GPIO 18
+#define CS_GPIO 5
 
 AsyncWebServer server(80);
 
-const char* ssid = ""; // Your WiFi SSID
-const char* password = ""; // Your WiFi Password
 
 
 /* Message callback of WebSerial */
@@ -33,34 +44,50 @@ void recvMsg(uint8_t *data, size_t len){
   WebSerial.println(d);
 }
 
+void notFound(AsyncWebServerRequest *request)
+{
+  request->send(404, "text/plain", "Not found");
+}
+
 void setup() {
-    Serial.begin(9600);
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.printf("WiFi Failed!\n");
-        return;
-    }
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
-    // WebSerial is accessible at "<IP Address>/webserial" in browser
-    WebSerial.begin(&server);
-    /* Attach Message Callback */
-    WebSerial.onMessage(recvMsg);
-    server.begin();
+  Serial.begin(115200);
+  while (!Serial && millis() < 5000);
+
+  AWS_LOGWARN(F("Default SPI pinout:"));
+  AWS_LOGWARN1(F("SPI_HOST:"), ETH_SPI_HOST);
+  AWS_LOGWARN1(F("MOSI:"), MOSI_GPIO);
+  AWS_LOGWARN1(F("MISO:"), MISO_GPIO);
+  AWS_LOGWARN1(F("SCK:"),  SCK_GPIO);
+  AWS_LOGWARN1(F("CS:"),   CS_GPIO);
+  AWS_LOGWARN1(F("INT:"),  INT_GPIO);
+  AWS_LOGWARN1(F("SPI Clock (MHz):"), SPI_CLOCK_MHZ);
+  AWS_LOGWARN(F("========================="));
+
+  ///////////////////////////////////
+
+  // To be called before ETH.begin()
+  ESP32_W5500_onEvent();
+  
+  ETH.begin( MISO_GPIO, MOSI_GPIO, SCK_GPIO, CS_GPIO, INT_GPIO, SPI_CLOCK_MHZ, ETH_SPI_HOST, mac );
+  ESP32_W5500_waitForConnect();
+
+  ///////////////////////////////////
+
+  Serial.println(ETH.localIP());
+  
+  // Not Found Notification
+  server.onNotFound(notFound);
+  
+  // WebSerial is accessible at "<IP Address>/webserial" in browser
+  WebSerial.begin(&server);
+  
+  /* Attach Message Callback */
+  WebSerial.onMessage(recvMsg);
+  server.begin();
 }
 
 void loop() {
     delay(2000);
-
-    // we suggest you to use `print + "\n"` instead of `println`
-    // because the println will send "\n" separately, which means
-    // it will cost a sending buffer just for storage "\n". (there
-    // only 8 buffer space in ESPAsyncWebServer by default)
-    WebSerial.print(F("IP address: "));
-    // if not use toString the ip will be sent in 7 part,
-    // which means it will cost 7 sending buffer.
-    WebSerial.println(WiFi.localIP().toString());
     WebSerial.printf("Millis=%lu\n", millis());
     WebSerial.printf("Free heap=[%u]\n", ESP.getFreeHeap());
 }
